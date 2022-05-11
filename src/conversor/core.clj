@@ -1,5 +1,6 @@
 (ns conversor.core
   (:require [clojure.tools.cli :refer [parse-opts]]
+            [cheshire.core :refer [parse-string]]
             [clj-http.client :as http-client])
   (:gen-class))
 
@@ -20,5 +21,7 @@
   "I don't do a whole lot ... yet."
   [& args]
   (let [{:keys [de para]} (:options (parse-opts args opcoes-do-programa))]
-    (prn "Cotação atual:"
-         (http-client/get (compor-url (parametrizar-moedas de para))))))
+    (-> (:body (http-client/get (compor-url (parametrizar-moedas de para))))
+        (parse-string)
+        (get-in ["USDBRL" "bid"])
+        (prn))))
