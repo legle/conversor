@@ -1,5 +1,6 @@
 (ns conversor.core
   (:require [clojure.tools.cli :refer [parse-opts]]
+            [clojure.string :refer [upper-case]]
             [cheshire.core :refer [parse-string]]
             [clj-http.client :as http-client])
   (:gen-class))
@@ -11,7 +12,15 @@
 
 (defn parametrizar-moedas
   [de para]
-  (str de "-" para))
+  (upper-case (str de "-" para)))
+
+(defn raiz-do-json
+  [de para]
+  (upper-case (str de para)))
+
+(defn pegar-valor
+  [json chave]
+  (get-in json [chave]))
 
 (defn compor-url
   [moedas]
@@ -21,12 +30,11 @@
   [de para]
   (-> (:body (http-client/get (compor-url (parametrizar-moedas de para))))
       (parse-string)
-      (get-in ["BRLUSD" "ask"])))
+      (get-in [(raiz-do-json de para)])))
 
 (defn formatar-resultado
-  [cotacao]
-  (prn cotacao)
-  (str "A cotação da moeda é " cotacao))
+  [json]
+  (str "A cotação de " (pegar-valor json "name") " é " (pegar-valor json "bid")))
 
 (defn -main
   "I don't do a whole lot ... yet."
